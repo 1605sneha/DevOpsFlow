@@ -1,0 +1,22 @@
+
+name: DevOpsFlow CI Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Display Build Information
+        run: echo "DevOpsFlow CI Pipeline Started"
+
+      - name: Build Successful
+        run: echo "Build completed successfully!"
