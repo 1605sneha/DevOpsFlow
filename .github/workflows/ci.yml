@@ -7,6 +7,7 @@ on:
       environment:
         description: "Select deployment environment"
         required: true
+        default: development
         type: choice
         options:
           - development
@@ -22,6 +23,7 @@ permissions:
   deployments: write
 
 jobs:
+
   build:
     name: Build and Test Spring Boot
     runs-on: ubuntu-latest
@@ -48,6 +50,7 @@ jobs:
           name: devopsflow-jar
           path: devopsflow/target/*.jar
           if-no-files-found: error
+          retention-days: 7
 
   deploy:
     name: Deploy to ${{ github.event.inputs.environment || 'development' }}
@@ -63,13 +66,25 @@ jobs:
           echo "Selected environment:"
           echo "${{ github.event.inputs.environment || 'development' }}"
 
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: devopsflow-jar
+          path: ./artifacts
+
+      - name: Verify Build Artifact
+        run: |
+          echo "Checking generated application artifact..."
+          ls -lah ./artifacts
+
       - name: Start Deployment
         run: echo "Deployment started"
 
       - name: Simulate Deployment
         run: |
           echo "Deploying DevOpsFlow..."
+          echo "Target environment: ${{ github.event.inputs.environment || 'development' }}"
           echo "Deployment completed successfully!"
 
       - name: Deployment Successful
-        run: echo "Deployment successful!"
+        run: echo "Deployment simulation successful!"
