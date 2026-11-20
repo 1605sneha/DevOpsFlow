@@ -1,0 +1,1039 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+    <title>DevOpsFlow | Pipeline Command Center</title>
+    <link rel="stylesheet" href="style.css">
+
+    <!-- RELEASE MANAGEMENT SPACING -->
+    <style>
+        .release-management-spacer {
+            display: block;
+            width: 100%;
+            height: 45px;
+            flex-shrink: 0;
+        }
+
+        .deployment-section {
+            scroll-margin-top: 30px;
+        }
+
+        /* DEPLOYMENT CONTROL CENTER */
+        .deployment-control-panel {
+            margin: 24px 0 30px;
+            padding: 22px;
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.025);
+        }
+
+        .deployment-control-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .deployment-control-heading h3 {
+            margin: 5px 0 7px;
+        }
+
+        .deployment-control-heading p {
+            margin: 0;
+        }
+
+        .deployment-control-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(150px, 1fr)) auto;
+            gap: 14px;
+            align-items: end;
+        }
+
+        .deployment-control-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .deployment-control-field label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .deployment-control-field select,
+        .deployment-control-value {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 43px;
+            padding: 11px 12px;
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 8px;
+            background: var(--input-bg, rgba(10,16,32,0.75));
+            color: inherit;
+            font: inherit;
+        }
+
+        .deployment-control-value {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .deployment-control-message {
+            min-height: 18px;
+            margin: 16px 0 0;
+            font-size: 13px;
+            color: var(--muted, #9aa7bd);
+        }
+
+        .deployment-confirm-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.72);
+        }
+
+        .deployment-confirm-backdrop[hidden] {
+            display: none !important;
+        }
+
+        .deployment-confirm-modal {
+            width: min(100%, 440px);
+            padding: 26px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            background: var(--panel-bg, #111a2e);
+            color: inherit;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        }
+
+        .deployment-confirm-modal .modal-close {
+            float: right;
+        }
+
+        .deployment-confirm-modal h2 {
+            margin: 12px 0;
+        }
+
+        .deployment-confirm-modal p {
+            line-height: 1.6;
+        }
+
+        .deployment-confirm-details {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 18px 0;
+            padding: 13px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            font-size: 13px;
+        }
+
+        .deployment-confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        @media (max-width: 900px) {
+            .deployment-control-grid {
+                grid-template-columns: repeat(2, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 560px) {
+            .deployment-control-heading {
+                flex-direction: column;
+            }
+
+            .deployment-control-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .deployment-confirm-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <a class="brand" href="#">
+            <span class="brand-icon">D</span>
+            <span>DevOps<span class="brand-light">Flow</span></span>
+        </a>
+
+        <div class="workspace-label">WORKSPACE</div>
+
+        <div class="workspace">
+            <span class="workspace-avatar">S</span>
+            <span>
+                <strong>My Workspace</strong>
+                <small>Personal account</small>
+            </span>
+            <span class="workspace-arrow">⌄</span>
+        </div>
+
+        <nav class="navigation">
+
+            <div class="nav-label">OVERVIEW</div>
+
+            <a class="nav-link active" href="#overview">
+                <span>◫</span> Dashboard
+            </a>
+
+            <a class="nav-link" href="#repositories">
+                <span>◈</span> Repositories
+            </a>
+
+            <a class="nav-link" href="#pipelines">
+                <span>⟳</span> Pipelines
+            </a>
+
+            <a class="nav-link" href="#history">
+                <span>▤</span> Execution History
+            </a>
+
+            <div class="nav-label">MANAGEMENT</div>
+
+            <a class="nav-link" href="#activity">
+                <span>◷</span> Activity Monitor
+            </a>
+
+            <a class="nav-link" href="#deploymentSection">
+                <span>⇧</span> Deployments
+            </a>
+
+            <a class="nav-link"
+               href="https://github.com/1605sneha/DevOpsFlow/actions"
+               target="_blank"
+               rel="noopener">
+                <span>↗</span> GitHub Actions
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="connection-indicator">
+                <span class="pulse-dot"></span>
+                <span>
+                    <strong>Backend connection</strong>
+                    <small id="connectionStatus">Checking...</small>
+                </span>
+            </div>
+
+            <div class="user-profile">
+                <div class="user-avatar">S</div>
+                <div>
+                    <strong>Developer</strong>
+                    <small>DevOpsFlow Admin</small>
+                </div>
+                <span class="profile-menu">•••</span>
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <div class="mobile-brand">
+                <button class="icon-button"
+                        id="menuButton"
+                        aria-label="Toggle menu">☰</button>
+
+                <strong>DevOpsFlow</strong>
+            </div>
+
+            <div class="breadcrumb">
+                Workspace <span>/</span> Dashboard
+            </div>
+
+            <div class="topbar-actions">
+
+                <span class="environment-tag">
+                    <span class="pulse-dot"></span> Development
+                </span>
+
+                <button class="icon-button"
+                        id="themeButton"
+                        title="Toggle theme">☼</button>
+
+                <a class="github-top-link"
+                   href="https://github.com/1605sneha/DevOpsFlow"
+                   target="_blank"
+                   rel="noopener">
+                    GitHub ↗
+                </a>
+
+            </div>
+
+        </header>
+
+
+        <div class="content">
+
+            <!-- DASHBOARD OVERVIEW -->
+            <section class="welcome-section" id="overview">
+
+                <div>
+                    <div class="eyebrow">COMMAND CENTER / OVERVIEW</div>
+
+                    <h1>Pipeline Dashboard</h1>
+
+                    <p>
+                        Monitor, trigger and manage your continuous
+                        integration workflows.
+                    </p>
+                </div>
+
+                <div class="welcome-actions">
+
+                    <button class="button button-secondary"
+                            id="refreshButton">
+                        ↻ Refresh
+                    </button>
+
+                    <button class="button button-primary"
+                            id="triggerButton">
+                        ▶ Trigger Pipeline
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- REPOSITORY INFORMATION -->
+            <section class="repository-banner" id="repositories">
+
+                <div class="repo-main">
+
+                    <div class="repo-icon">⌘</div>
+
+                    <div>
+
+                        <div class="repo-title">
+                            <h2>DevOpsFlow</h2>
+                            <span class="visibility-tag">PUBLIC</span>
+                        </div>
+
+                        <p>1605sneha / DevOpsFlow</p>
+
+                        <div class="repo-meta">
+                            <span>⑂ main</span>
+                            <span>◈ GitHub Repository</span>
+                            <span id="lastUpdated">Not synced yet</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="repo-actions">
+
+                    <a class="button button-secondary"
+                       href="https://github.com/1605sneha/DevOpsFlow"
+                       target="_blank"
+                       rel="noopener">
+                        View Repository ↗
+                    </a>
+
+                    <button class="button button-primary"
+                            id="syncButton">
+                        ⇄ Sync Data
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- STATISTICS HEADING -->
+            <section class="section-heading">
+
+                <div>
+                    <div class="eyebrow">PERFORMANCE</div>
+                    <h2>Pipeline Statistics</h2>
+                </div>
+
+                <span class="muted-text">
+                    Based on stored pipeline history
+                </span>
+
+            </section>
+
+
+            <!-- STATISTICS CARDS -->
+            <section class="stats-grid">
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span>Total Executions</span>
+                        <span class="stat-icon blue">▤</span>
+                    </div>
+
+                    <div class="stat-number" id="totalPipelines">—</div>
+
+                    <div class="stat-foot">
+                        Recorded workflow runs
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span>Successful</span>
+                        <span class="stat-icon green">✓</span>
+                    </div>
+
+                    <div class="stat-number" id="successfulPipelines">—</div>
+
+                    <div class="stat-foot">
+                        Completed successfully
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span>Failed</span>
+                        <span class="stat-icon red">!</span>
+                    </div>
+
+                    <div class="stat-number" id="failedPipelines">—</div>
+
+                    <div class="stat-foot">
+                        Require investigation
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-top">
+                        <span>In Progress</span>
+                        <span class="stat-icon amber">◷</span>
+                    </div>
+
+                    <div class="stat-number" id="runningPipelines">—</div>
+
+                    <div class="stat-foot">
+                        Currently running or queued
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- LIVE PIPELINE MONITORING -->
+            <section class="main-grid">
+
+                <article class="panel pipeline-panel" id="pipelines">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <div class="eyebrow">LIVE MONITORING</div>
+                            <h2>Recent Pipeline Runs</h2>
+                        </div>
+
+                        <button class="text-button"
+                                id="liveRefreshButton">
+                            ↻ Refresh
+                        </button>
+
+                    </div>
+
+                    <div class="pipeline-toolbar">
+
+                        <div class="search-box">
+                            <span>⌕</span>
+
+                            <input id="searchInput"
+                                   type="search"
+                                   placeholder="Search workflows...">
+                        </div>
+
+                        <select id="statusFilter"
+                                aria-label="Filter by status">
+
+                            <option value="all">All statuses</option>
+                            <option value="success">Success</option>
+                            <option value="failure">Failure</option>
+                            <option value="running">Running</option>
+                            <option value="queued">Queued</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="table-scroll">
+
+                        <table>
+
+                            <thead>
+                            <tr>
+                                <th>WORKFLOW</th>
+                                <th>BRANCH</th>
+                                <th>STATUS</th>
+                                <th>TRIGGERED</th>
+                                <th>ACTION</th>
+                            </tr>
+                            </thead>
+
+                            <tbody id="pipelineTableBody">
+
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    Loading pipeline runs...
+                                </td>
+                            </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="panel-footer">
+                        <span id="liveCount">0 pipeline runs</span>
+                        <span>Source: GitHub Actions API</span>
+                    </div>
+
+                </article>
+
+
+                <!-- SUCCESS RATE -->
+                <article class="panel health-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <div class="eyebrow">QUALITY INSIGHTS</div>
+                            <h2>Success Rate</h2>
+                        </div>
+
+                        <span class="stat-icon purple">◉</span>
+
+                    </div>
+
+                    <div class="success-chart">
+
+                        <div class="donut" id="successDonut">
+
+                            <div class="donut-center">
+                                <strong id="successRate">—</strong>
+                                <span>Success rate</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="legend">
+
+                        <div>
+                            <span class="legend-dot green-bg"></span>
+                            Successful
+                            <strong id="legendSuccess">0</strong>
+                        </div>
+
+                        <div>
+                            <span class="legend-dot red-bg"></span>
+                            Failed
+                            <strong id="legendFailed">0</strong>
+                        </div>
+
+                        <div>
+                            <span class="legend-dot amber-bg"></span>
+                            In progress
+                            <strong id="legendRunning">0</strong>
+                        </div>
+
+                    </div>
+
+                    <p class="chart-note">
+                        Calculated from the pipeline history stored in PostgreSQL.
+                    </p>
+
+                </article>
+
+            </section>
+
+
+            <!-- EXECUTION HISTORY -->
+            <section class="panel history-panel" id="history">
+
+                <div class="panel-header">
+
+                    <div>
+                        <div class="eyebrow">DATABASE RECORDS</div>
+                        <h2>Pipeline Execution History</h2>
+                    </div>
+
+                    <button class="button button-secondary"
+                            id="historyRefreshButton">
+                        ↻ Load History
+                    </button>
+
+                </div>
+
+                <div class="history-list" id="historyList">
+
+                    <div class="empty-state">
+                        Loading stored history...
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ACTIVITY MONITOR -->
+            <section class="panel activity-panel" id="activity">
+
+                <div class="panel-header">
+
+                    <div>
+                        <div class="eyebrow">SYSTEM MONITOR</div>
+                        <h2>Platform Activity</h2>
+                    </div>
+
+                    <span class="live-label">
+                        <span class="pulse-dot"></span> LIVE
+                    </span>
+
+                </div>
+
+                <div class="activity-grid">
+
+                    <div>
+                        <span class="activity-icon">⌘</span>
+
+                        <div>
+                            <strong>GitHub Integration</strong>
+                            <small id="githubStatus">
+                                Waiting for API check
+                            </small>
+                        </div>
+
+                        <span class="activity-state"
+                              id="githubIndicator">●</span>
+                    </div>
+
+
+                    <div>
+                        <span class="activity-icon">▤</span>
+
+                        <div>
+                            <strong>PostgreSQL History</strong>
+                            <small id="databaseStatus">
+                                Waiting for API check
+                            </small>
+                        </div>
+
+                        <span class="activity-state"
+                              id="databaseIndicator">●</span>
+                    </div>
+
+
+                    <div>
+                        <span class="activity-icon">⚙</span>
+
+                        <div>
+                            <strong>Spring Boot Backend</strong>
+                            <small id="backendStatus">
+                                Checking health endpoint
+                            </small>
+                        </div>
+
+                        <span class="activity-state"
+                              id="backendIndicator">●</span>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- SPACING BETWEEN ACTIVITY MONITOR AND RELEASE MANAGEMENT -->
+            <div class="release-management-spacer"
+                 aria-hidden="true"></div>
+
+
+            <!-- DEPLOYMENT MONITORING / RELEASE MANAGEMENT -->
+            <section class="deployment-section" id="deploymentSection">
+
+                <div class="section-header">
+
+                    <div>
+                        <div class="eyebrow">RELEASE MANAGEMENT</div>
+
+                        <h2>Deployment Monitoring</h2>
+
+                        <p>
+                            Monitor deployments across your environments.
+                        </p>
+                    </div>
+
+                    <button id="syncDeploymentsBtn"
+                            class="primary-btn"
+                            onclick="syncDeployments()">
+
+                        <span>↻</span> Sync Deployments
+
+                    </button>
+
+                </div>
+
+
+                <!-- NEW DEPLOYMENT CONTROL CENTER -->
+                <div class="deployment-control-panel"
+                     id="deploymentControlCenter">
+
+                    <div class="deployment-control-heading">
+
+                        <div>
+                            <div class="eyebrow">AUTOMATED RELEASE</div>
+
+                            <h3>Deployment Control Center</h3>
+
+                            <p class="muted-text">
+                                Select a target environment to prepare a GitHub Actions deployment.
+                            </p>
+                        </div>
+
+                        <span class="live-label">
+                            <span class="pulse-dot"></span> READY
+                        </span>
+
+                    </div>
+
+                    <div class="deployment-control-grid">
+
+                        <div class="deployment-control-field">
+
+                            <label for="deploymentEnvironment">
+                                Target Environment
+                            </label>
+
+                            <select id="deploymentEnvironment">
+
+                                <option value="development">
+                                    Development
+                                </option>
+
+                                <option value="testing">
+                                    Testing
+                                </option>
+
+                                <option value="production">
+                                    Production
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="deployment-control-field">
+
+                            <label>GitHub Repository</label>
+
+                            <div class="deployment-control-value">
+                                1605sneha / DevOpsFlow
+                            </div>
+
+                        </div>
+
+
+                        <div class="deployment-control-field">
+
+                            <label>Branch</label>
+
+                            <div class="deployment-control-value">
+                                main
+                            </div>
+
+                        </div>
+
+
+                        <button type="button"
+                                class="button button-primary"
+                                id="triggerDeploymentBtn">
+
+                            ⇧ Trigger Deployment
+
+                        </button>
+
+                    </div>
+
+                    <p class="deployment-control-message"
+                       id="deploymentMessage"
+                       aria-live="polite">
+
+                        Select an environment and trigger deployment when ready.
+
+                    </p>
+
+                </div>
+
+
+                <!-- ENVIRONMENT CARDS -->
+                <div class="deployment-cards">
+
+                    <div class="deployment-card">
+
+                        <div class="environment-label">DEV</div>
+
+                        <h3>Development</h3>
+
+                        <p id="developmentStatus">
+                            Waiting for data
+                        </p>
+
+                    </div>
+
+
+                    <div class="deployment-card">
+
+                        <div class="environment-label">TEST</div>
+
+                        <h3>Testing</h3>
+
+                        <p id="testingStatus">
+                            Waiting for data
+                        </p>
+
+                    </div>
+
+
+                    <div class="deployment-card">
+
+                        <div class="environment-label">PROD</div>
+
+                        <h3>Production</h3>
+
+                        <p id="productionStatus">
+                            Waiting for data
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- DEPLOYMENT HISTORY -->
+                <div class="deployment-history">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <div class="eyebrow">DEPLOYMENT RECORDS</div>
+                            <h2>Deployment History</h2>
+                        </div>
+
+                        <span class="live-label">
+                            <span class="pulse-dot"></span> TRACKING
+                        </span>
+
+                    </div>
+
+
+                    <div class="table-scroll">
+
+                        <table>
+
+                            <thead>
+                            <tr>
+                                <th>ENVIRONMENT</th>
+                                <th>BRANCH</th>
+                                <th>STATUS</th>
+                                <th>DEPLOYMENT DATE</th>
+                                <th>DEPLOYMENT LINK</th>
+                            </tr>
+                            </thead>
+
+                            <tbody id="deploymentTableBody">
+
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    Loading deployment records...
+                                </td>
+                            </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- FOOTER -->
+            <footer class="footer">
+
+                <span>
+                    DevOpsFlow
+                    <span class="footer-dot">•</span>
+                    CI/CD Management Platform
+                </span>
+
+                <span>
+                    Built with Spring Boot, PostgreSQL & GitHub Actions
+                </span>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- NOTIFICATION CONTAINER -->
+<div class="toast-container"
+     id="toastContainer"
+     aria-live="polite"
+     aria-atomic="true">
+</div>
+
+
+<!-- DEPLOYMENT CONFIRMATION MODAL -->
+<div class="deployment-confirm-backdrop"
+     id="deploymentConfirmModal"
+     hidden>
+
+    <div class="deployment-confirm-modal">
+
+        <button class="modal-close"
+                type="button"
+                id="closeDeploymentModal"
+                aria-label="Close deployment confirmation">
+            ×
+        </button>
+
+        <div class="modal-icon">⇧</div>
+
+        <div class="eyebrow">DEPLOYMENT DISPATCH</div>
+
+        <h2>Confirm Deployment?</h2>
+
+        <p>
+            You are about to trigger the GitHub Actions workflow
+            for the selected environment.
+        </p>
+
+        <div class="deployment-confirm-details">
+
+            <span>Target environment</span>
+
+            <strong id="deploymentEnvironmentPreview">
+                development
+            </strong>
+
+        </div>
+
+        <div class="deployment-confirm-actions">
+
+            <button class="button button-secondary"
+                    type="button"
+                    id="cancelDeployment">
+                Cancel
+            </button>
+
+            <button class="button button-primary"
+                    type="button"
+                    id="confirmDeployment">
+                Confirm &amp; Deploy
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ORIGINAL PIPELINE TRIGGER MODAL -->
+<div class="modal-backdrop" id="confirmModal" hidden>
+
+    <div class="modal">
+
+        <button class="modal-close" id="closeModal">×</button>
+
+        <div class="modal-icon">▶</div>
+
+        <div class="eyebrow">WORKFLOW DISPATCH</div>
+
+        <h2>Trigger CI Pipeline?</h2>
+
+        <p>
+            This will dispatch the GitHub Actions workflow
+            for the main branch of DevOpsFlow.
+        </p>
+
+        <div class="modal-repo">
+            1605sneha / DevOpsFlow
+            <span>main</span>
+        </div>
+
+        <div class="modal-actions">
+
+            <button class="button button-secondary"
+                    id="cancelTrigger">
+                Cancel
+            </button>
+
+            <button class="button button-primary"
+                    id="confirmTrigger">
+                Confirm &amp; Run
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- JAVASCRIPT -->
+<script src="/script.js?v=20261116-2"></script>
+
+</body>
+</html>
