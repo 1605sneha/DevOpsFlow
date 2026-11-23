@@ -3,7 +3,7 @@
    DEVOPSFLOW - FRONTEND CONFIGURATION
 ========================================== */
 
-const API_BASE = "http://localhost:8080/api";
+const API_BASE = "/api";
 
 const REPOSITORY_OWNER = "1605sneha";
 const REPOSITORY_NAME = "DevOpsFlow";
@@ -1652,6 +1652,108 @@ function initializeEventListeners() {
     });
 }
 
+/* ==========================================
+   RENDER CLOUD DEPLOYMENT MONITORING
+========================================== */
+
+async function loadRenderDeployments() {
+
+    const tbody = document.getElementById(
+        "renderDeploymentTableBody"
+    );
+
+    const statusText = document.getElementById(
+        "renderDeploymentStatus"
+    );
+
+    if (!tbody) return;
+
+    try {
+        const deployments = await apiRequest(
+            "/render/deployments"
+        );
+
+        if (!Array.isArray(deployments)) {
+            throw new Error("Invalid deployment response");
+        }
+
+        if (statusText) {
+            statusText.textContent =
+                `${deployments.length} Render deployment records retrieved`;
+        }
+
+        if (deployments.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        No Render deployments found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = deployments.map(deployment => {
+
+            const rawStatus = String(
+                deployment.status || "unknown"
+            );
+
+            const status = rawStatus.toLowerCase();
+
+            const badgeClass =
+                status === "live"
+                    ? "success"
+                    : ["build_failed", "update_failed", "canceled", "deactivated"].includes(status)
+                        ? "failure"
+                        : ["building", "updating", "pre_deploy", "pending"].includes(status)
+                            ? "running"
+                            : "neutral";
+
+            const commit = deployment.commit?.id ||
+                deployment.commit?.message ||
+                "Not available";
+
+            return `
+                <tr>
+                    <td>${escapeHTML(deployment.id || "Unknown")}</td>
+
+                    <td>
+                        <span class="status-badge status-${badgeClass}">
+                            ${escapeHTML(rawStatus)}
+                        </span>
+                    </td>
+
+                    <td>${escapeHTML(commit)}</td>
+
+                    <td>${escapeHTML(formatDate(deployment.createdAt))}</td>
+
+                    <td>${escapeHTML(formatDate(deployment.finishedAt))}</td>
+                </tr>
+            `;
+
+        }).join("");
+
+    } catch (error) {
+
+        console.error("Render monitoring error:", error);
+
+        if (statusText) {
+            statusText.textContent =
+                "Unable to retrieve Render deployment data.";
+        }
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty-state">
+                    Render deployment monitoring unavailable.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+
 
 /* ==========================================
    INITIALIZE APPLICATION
@@ -1665,7 +1767,8 @@ function initializeApplication() {
 
     // 1. Initialize dashboard event listeners.
     initializeEventListeners();
-
+    document.getElementById("refreshRenderBtn")
+        ?.addEventListener("click", loadRenderDeployments);
     // 2. Initialize deployment controls immediately.
     // No API request is awaited before this step.
     initializeDeploymentControlCenter();
@@ -1674,10 +1777,12 @@ function initializeApplication() {
     initializeTheme();
 
     // 4. Load dashboard data.
+    loadRenderDeployments();
     refreshDashboard();
 
     // 5. Automatic synchronization every 30 seconds.
     setInterval(() => {
+        loadRenderDeployments();
         refreshDashboard();
     }, 30000);
 

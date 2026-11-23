@@ -904,6 +904,52 @@
             </section>
 
 
+            <!-- RENDER CLOUD DEPLOYMENT MONITORING -->
+            <section class="panel render-monitor-panel" id="renderMonitoring">
+
+                <div class="panel-header">
+                    <div>
+                        <div class="eyebrow">CLOUD DEPLOYMENT</div>
+                        <h2>Render Deployment Monitoring</h2>
+                    </div>
+
+                    <button class="button button-secondary"
+                            type="button"
+                            id="refreshRenderBtn">
+                        ↻ Refresh
+                    </button>
+                </div>
+
+                <p class="muted-text" id="renderDeploymentStatus">
+                    Waiting for Render deployment data...
+                </p>
+
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>DEPLOYMENT ID</th>
+                            <th>STATUS</th>
+                            <th>COMMIT</th>
+                            <th>CREATED AT</th>
+                            <th>FINISHED AT</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="renderDeploymentTableBody">
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                Loading Render deployments...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+
+
             <!-- FOOTER -->
             <footer class="footer">
 
