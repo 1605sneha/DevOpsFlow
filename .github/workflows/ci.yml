@@ -50,12 +50,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Build Spring Boot Application
+       - name: Build Spring Boot Application
         working-directory: ./devopsflow
         env:
           DB_USERNAME: postgres
           DB_PASSWORD: postgres
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/devopsflow_test
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
         run: mvn -B clean package
